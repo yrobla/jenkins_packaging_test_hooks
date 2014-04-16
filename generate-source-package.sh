@@ -1,4 +1,4 @@
-#de!/bin/bash
+#!/bin/bash
 # Purpose: generate Debian source package based on project's git repository
 # schema:
 # $debian_dir: and one directory for every distribution
@@ -13,8 +13,8 @@ PACKAGES_PATH=$1
 PROJECT_PARTS=( ${ZUUL_PROJECT//\// } )
 DEBIAN_PACKAGE=${PROJECT_PARTS[1]}
 
-echo $WORKSPACE
 cd $WORKSPACE
+rm -rf ${DEBIAN_PACKAGE}
 git clone ${PACKAGES_PATH}/${DEBIAN_PACKAGE}
 cd ${DEBIAN_PACKAGE}/
 
@@ -23,12 +23,15 @@ ORIG_VERSION=`dpkg-parsechangelog | sed -n 's/^Version: //p'`
 MAJOR_VERSION=`echo $ORIG_VERSION | sed -e 's/^[\[:digit:]]*://' -e 's/[-].*//'`
 
 cd ../source/
-tar -czvf * ../${DEBIAN_PACKAGE}.orig.tar.gz *
+tar -czvf ../${DEBIAN_PACKAGE}_${MAJOR_VERSION}.orig.tar.gz *
 cd ..
 
 # remove original files and copy debian files into branch
 rm -rf source/.[^.]*
 cp -R ${DEBIAN_PACKAGE}/debian source/
+
+cd source/
+rm -rf debian/patches
 
 export DEBEMAIL="Yolanda Robla Mota <yolanda.robla-mota@hp.com>"
 
