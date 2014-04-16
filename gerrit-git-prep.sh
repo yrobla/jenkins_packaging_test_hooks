@@ -40,18 +40,20 @@ if [ ! -z "$ZUUL_CHANGE" ]
 then
     echo "Triggered by: $GERRIT_SITE/$ZUUL_CHANGE"
 fi
+
+cd $WORKSPACE
+rm -fr .[^.]* *
+mkdir source
+cd source
+
 set -x
-if [[ ! -e .git ]]
+if [ -d /opt/git/$ZUUL_PROJECT/.git ]
 then
-    ls -a
-    rm -fr .[^.]* *
-    if [ -d /opt/git/$ZUUL_PROJECT/.git ]
-    then
-        git clone file:///opt/git/$ZUUL_PROJECT .
-    else
-        git clone $GIT_ORIGIN/$ZUUL_PROJECT .
-    fi
+    git clone file:///opt/git/$ZUUL_PROJECT .
+else
+    git clone $GIT_ORIGIN/$ZUUL_PROJECT .
 fi
+
 git remote set-url origin $GIT_ORIGIN/$ZUUL_PROJECT
 # attempt to work around bugs 925790 and 1229352
 if ! git remote update

@@ -9,7 +9,7 @@
 
     builders:
         - gerrit-git-prep
-
+        - build-source-package
 - job-group:
     name: packaging-jobs
     jobs:
@@ -19,6 +19,11 @@
     name: gerrit-git-prep
     builders:
       - shell: "/home/ubuntu/jenkins_packaging_test/gerrit-git-prep.sh http://15.126.244.13:8000 git://git.openstack.org"
+
+- builder:
+    name: build-source-package
+    builders:
+      - shell: "/home/ubuntu/jenkins_packaging_test/generate-source-package.sh file:///srv/packages"
 
 - project:
     name: nova
