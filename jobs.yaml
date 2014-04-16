@@ -1,0 +1,29 @@
+- job-template:
+    name: 'package-{name}'
+
+    wrappers:
+        - timeout:
+            timeout: 40
+            fail: true
+        - timestamps
+
+    builders:
+        - gerrit-git-prep
+
+- job-group:
+    name: packaging-jobs
+    jobs:
+      - 'package-{name}'
+
+- builder:
+    name: gerrit-git-prep
+    builders:
+      - shell: "/home/ubuntu/jenkins_packaging_test/gerrit-git-prep.sh http://15.126.244.13:8000 git://git.openstack.org"
+
+- project:
+    name: nova
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
