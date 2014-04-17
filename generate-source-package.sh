@@ -9,29 +9,14 @@
 env
 
 # defaults
-PACKAGES_PATH=$1
 PROJECT_PARTS=( ${ZUUL_PROJECT//\// } )
 DEBIAN_PACKAGE=${PROJECT_PARTS[1]}
 
 cd $WORKSPACE
-rm -rf ${DEBIAN_PACKAGE}
-git clone ${PACKAGES_PATH}/${DEBIAN_PACKAGE}
-cd ${DEBIAN_PACKAGE}/
 
 # get latest version to generate the tarball
 ORIG_VERSION=`dpkg-parsechangelog | sed -n 's/^Version: //p'`
 MAJOR_VERSION=`echo $ORIG_VERSION | sed -e 's/^[\[:digit:]]*://' -e 's/[-].*//'`
-
-cd ../source/
-tar -czvf ../${DEBIAN_PACKAGE}_${MAJOR_VERSION}.orig.tar.gz *
-cd ..
-
-# remove original files and copy debian files into branch
-rm -rf source/.[^.]*
-cp -R ${DEBIAN_PACKAGE}/debian source/
-
-cd source/
-rm -rf debian/patches
 
 export DEBEMAIL="Yolanda Robla Mota <yolanda.robla-mota@hp.com>"
 
@@ -44,4 +29,9 @@ dch -b --distribution="${DISTRIBUTION}" \
   --newversion="${AUTO_VERSION}+${distribution}" \
   -- "Automated package build."
 
+# move everything on dir inner to avoid creation outside workspace dir
+mkdir source
+cd source
+mv ../* ./
+dh_make --createorig --indep -y -p ${DEBIAN_PACKAGE}_${MAJOR_VERSION}
 dpkg-buildpackage -uc -us -nc -d -S -i -I --source-option=--unapply-patches

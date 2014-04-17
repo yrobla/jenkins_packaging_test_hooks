@@ -43,8 +43,6 @@ fi
 
 cd $WORKSPACE
 rm -fr .[^.]* *
-mkdir source
-cd source
 
 set -x
 if [ -d /opt/git/$ZUUL_PROJECT/.git ]

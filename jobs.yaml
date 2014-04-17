@@ -23,7 +23,7 @@
 - builder:
     name: build-source-package
     builders:
-      - shell: "/home/ubuntu/jenkins_packaging_test/generate-source-package.sh file:///srv/packages"
+      - shell: "/home/ubuntu/jenkins_packaging_test/generate-source-package.sh"
 
 - project:
     name: nova
