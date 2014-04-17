@@ -31,8 +31,11 @@
         - axis:
             type: user-defined
             name: architecture
-            values:  !!python/tuple &architectures [i386,amd64]
+            values:  !!python/tuple [i386,amd64]
     builders:
+        - shell: |
+           echo "* Removing files workspace before copying artifacts from another project. *"
+           rm -f ./* || true
         - copyartifact:
             project: 'package-{name}'
             filter: '*'
@@ -44,12 +47,47 @@
            artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes,**/lintian.txt'
        - fingerprint:
             record-artifacts: true
+       - trigger:
+           project: 'package-{name}-repos'
+           threshold: UNSTABLE
+     
+- job-template:
+      name: 'package-{name}-repos'
+      project-type: matrix
+      description: |
+        Repository handling for Debian packages of {name}.
+      execution-strategy:
+        sequential: true
+      axes:
+        - axis:
+            type: user-defined
+            name: architecture
+            values:  !!python/tuple [i386,amd64]
+      builders:
+        - shell: |
+           echo "* Removing files workspace before copying artifacts from another project. *"
+           rm -f ./* || true
+        - copyartifact:
+            project: 'package-{name}-binaries/architecture=$architecture'
+            filter: '*'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+            target: 'binaries/'
+        - shell: "/home/ubuntu/jenkins_packaging_test/generate-repository.sh"
+      publishers:
+        - archive:
+            artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes'
+        - fingerprint:
+            record-artifacts: true
+      wrappers:
+        - timestamps
 
 - job-group:
     name: packaging-jobs
     jobs:
       - 'package-{name}'
       - 'package-{name}-binaries'
+      - 'package-{name}-repos'
 
 - builder:
     name: gerrit-git-prep
