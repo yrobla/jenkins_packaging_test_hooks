@@ -10,10 +10,46 @@
     builders:
         - gerrit-git-prep
         - build-source-package
+
+    publishers:
+        - archive:
+            artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes,**/lintian.txt'
+        - fingerprint:
+            record-artifacts: true
+        - trigger:
+            project: 'package-{name}-binaries'
+            threshold: UNSTABLE
+
+- job-template:
+    name: 'package-{name}-binaries'
+    project-type: matrix
+    description: |
+       Build Debian packages of {name}
+    execution-strategy:
+       sequential: true
+    axes:
+        - axis:
+            type: user-defined
+            name: architecture
+            values:  !!python/tuple &architectures [i386,amd64]
+    builders:
+        - copyartifact:
+            project: 'package-{name}'
+            filter: '*'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+        - build-binary-package
+    publishers:
+       - archive:
+           artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes,**/lintian.txt'
+       - fingerprint:
+            record-artifacts: true
+
 - job-group:
     name: packaging-jobs
     jobs:
       - 'package-{name}'
+      - 'package-{name}-binaries'
 
 - builder:
     name: gerrit-git-prep
@@ -24,6 +60,11 @@
     name: build-source-package
     builders:
       - shell: "/home/ubuntu/jenkins_packaging_test/generate-source-package.sh"
+
+- builder:
+    name: build-binary-package
+    builders:
+        - shell: "/home/ubuntu/jenkins_packaging_test/generate-binary-package.sh"
 
 - project:
     name: nova
