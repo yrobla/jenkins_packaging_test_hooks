@@ -1,17 +1,20 @@
+- defaults:
+    name: global
+    logrotate_keep: &logrotate_keep
+     - 20
 - job-template:
     name: 'package-{name}'
-
+    logrotate:
+        numToKeep: '{logrotate_keep}'
     wrappers:
         - timeout:
             timeout: 40
             fail: true
         - timestamps
-
     builders:
         - gerrit-git-prep
         - build-source-package
         - lintian-check
-
     publishers:
         - archive:
             artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes,**/lintian.txt'
@@ -29,6 +32,8 @@
     project-type: matrix
     description: |
        Build Debian packages of {name}
+    logrotate:
+        numToKeep: '{logrotate_keep}'
     execution-strategy:
        sequential: true
     axes:
@@ -55,6 +60,9 @@
        - trigger:
            project: 'package-{name}-repos'
            threshold: UNSTABLE
+       - trigger:
+           project: 'package-{name}-piuparts'
+           threshold: UNSTABLE
        - junit:
            results: '**/lintian.xml'
            keep-long-stdio: false
@@ -64,6 +72,8 @@
       project-type: matrix
       description: |
         Repository handling for Debian packages of {name}.
+      logrotate:
+        numToKeep: '{logrotate_keep}'
       execution-strategy:
         sequential: true
       axes:
@@ -90,12 +100,51 @@
       wrappers:
         - timestamps
 
+- job-template:
+      name: 'package-{name}-piuparts'
+      project-type: matrix
+      description: |
+        Installation and upgrade tests for {name} Debian packages.
+        <!-- Do NOT edit this job through the web, it is generated via jenkins-job-builder! -->
+      disabled: false
+      logrotate:
+        numToKeep: '{logrotate_keep}'
+      execution-strategy:
+        sequential: true
+      axes:
+        - axis:
+            type: user-defined
+            name: architecture
+            values: !!python/tuple [i386,amd64]
+      builders:
+        - shell: |
+           echo "* Removing files workspace before copying artifacts from another project. *"
+           rm -f ./* || true
+        - copyartifact:
+            project: 'package-{name}-binaries/architecture=$architecture'
+            filter: '*.deb'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+            flatten: true
+            target: 'artifacts/'
+        - shell: "/home/ubuntu/jenkins_packaging_test/generate-piuparts.sh"
+      publishers:
+        - tap:
+            results: 'piuparts.tap'
+        - archive:
+            artifacts: 'piuparts.*'
+        - fingerprint:
+            record-artifacts: true
+      wrappers:
+        - timestamps
+
 - job-group:
     name: packaging-jobs
     jobs:
       - 'package-{name}'
       - 'package-{name}-binaries'
       - 'package-{name}-repos'
+      - 'package-{name}-piuparts'
 
 - builder:
     name: gerrit-git-prep
@@ -121,6 +170,7 @@
 
 - project:
     name: nova
+    logrotate_keep: *logrotate_keep
     github-org: openstack
     tarball-site: tarballs.openstack.org
 
