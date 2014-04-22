@@ -40,7 +40,7 @@
         - axis:
             type: user-defined
             name: architecture
-            values:  !!python/tuple [i386,amd64]
+            values:  !!python/tuple [amd64,]
     builders:
         - shell: |
            echo "* Removing files workspace before copying artifacts from another project. *"
@@ -80,7 +80,7 @@
         - axis:
             type: user-defined
             name: architecture
-            values:  !!python/tuple [i386,amd64]
+            values:  !!python/tuple [amd64,]
       builders:
         - shell: |
            echo "* Removing files workspace before copying artifacts from another project. *"
@@ -115,7 +115,7 @@
         - axis:
             type: user-defined
             name: architecture
-            values: !!python/tuple [i386,amd64]
+            values: !!python/tuple [amd64,]
       builders:
         - shell: |
            echo "* Removing files workspace before copying artifacts from another project. *"
