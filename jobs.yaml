@@ -10,6 +10,7 @@
     builders:
         - gerrit-git-prep
         - build-source-package
+        - lintian-check
 
     publishers:
         - archive:
@@ -19,6 +20,9 @@
         - trigger:
             project: 'package-{name}-binaries'
             threshold: UNSTABLE
+        - junit:
+            results: '**/lintian.xml'
+            keep-long-stdio: false
 
 - job-template:
     name: 'package-{name}-binaries'
@@ -42,6 +46,7 @@
             which-build: upstream-build
             fallback-to-last-successful: true
         - build-binary-package
+        - lintian-check
     publishers:
        - archive:
            artifacts: '**/*.gz,**/*.bz2,**/*.xz,**/*.deb,**/*.dsc,**/*.changes,**/lintian.txt'
@@ -50,6 +55,9 @@
        - trigger:
            project: 'package-{name}-repos'
            threshold: UNSTABLE
+       - junit:
+           results: '**/lintian.xml'
+           keep-long-stdio: false
      
 - job-template:
       name: 'package-{name}-repos'
@@ -103,6 +111,13 @@
     name: build-binary-package
     builders:
         - shell: "/home/ubuntu/jenkins_packaging_test/generate-binary-package.sh"
+
+- builder:
+    name: lintian-check
+    builders:
+        - shell: |
+            mkdir -p report
+            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
 
 - project:
     name: nova
