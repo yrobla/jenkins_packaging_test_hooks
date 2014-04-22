@@ -1,0 +1,34 @@
+# ubuntu specific configuration
+case "$distribution" in
+  trusty|precise)
+    MIRRORSITE="http://ie.archive.ubuntu.com/ubuntu/"
+    # we need key id 40976EAF437D05B5
+    DEBOOTSTRAPOPTS=("${DEBOOTSTRAPOPTS[@]}" "--keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg")
+    # cowdancer is in universe
+    COMPONENTS="main universe"
+    # package install speedup
+    EXTRAPACKAGES="eatmydata"
+    export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}/usr/lib/libeatmydata/libeatmydata.so"
+    ;;
+  lucid)
+    # lacks eatmydata package, so explicitely configure it
+    MIRRORSITE="http://ie.archive.ubuntu.com/ubuntu/"
+    # we need key id 40976EAF437D05B5
+    DEBOOTSTRAPOPTS=("${DEBOOTSTRAPOPTS[@]}" "--keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg")
+    # cowdancer is in universe
+    COMPONENTS="main universe"
+    ;;
+  lenny)
+    MIRRORSITE="http://archive.debian.org/debian/"
+    ;;
+  squeeze)
+    # lacks eatmydata package, so explicitely configure it
+    MIRRORSITE="http://ftp.ie.debian.org/debian"
+    ;;
+  *)
+    MIRRORSITE="http://ftp.ie.debian.org/debian"
+    # package install speedup
+    EXTRAPACKAGES="eatmydata"
+    export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}/usr/lib/libeatmydata/libeatmydata.so"
+    ;;
+esac
