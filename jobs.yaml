@@ -212,3 +212,30 @@
 
     jobs:
         - packaging-jobs
+
+- project:
+    name: horizon
+    logrotate_keep: *logrotate_keep
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
+
+- project:
+    name: ironic
+    logrotate_keep: *logrotate_keep
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
+
+- project:
+    name: python-ironicclient
+    logrotate_keep: *logrotate_keep
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
