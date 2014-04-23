@@ -194,3 +194,21 @@
 
     jobs:
         - packaging-jobs
+
+- project:
+    name: glance
+    logrotate_keep: *logrotate_keep
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
+
+- project:
+    name: heat
+    logrotate_keep: *logrotate_keep
+    github-org: openstack
+    tarball-site: tarballs.openstack.org
+
+    jobs:
+        - packaging-jobs
